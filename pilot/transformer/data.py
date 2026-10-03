@@ -68,7 +68,8 @@ def encode_record(
         )
     labels = [-100] * len(ids)
     answer_mask = [False] * len(ids)
-    # Logit at t predicts ids[t+1], so answer target ids [start:end] map to t [start-1:end-1].
+    # Logit at t predicts ids[t+1], so answer target ids [start:end] map to
+    # t [start-1:end-1]. Prompt, protocol delimiters, and EOS are masked.
     for target_index in range(answer_start, answer_end):
         labels[target_index - 1] = ids[target_index]
         answer_mask[target_index - 1] = True

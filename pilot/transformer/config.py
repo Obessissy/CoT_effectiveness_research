@@ -46,6 +46,7 @@ class TrainConfig:
     learning_rate: float = 3e-4
     weight_decay: float = 0.1
     grad_clip_norm: float = 1.0
+    eos_loss_weight: float = 0.0
     epochs: int = 1
     max_steps: int | None = None
     eval_every_steps: int = 250

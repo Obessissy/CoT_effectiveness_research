@@ -41,6 +41,13 @@ class CausalTransformer(nn.Module):
     def answer_loss(self, logits: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
         return nn.functional.cross_entropy(logits.reshape(-1, logits.shape[-1]), labels.reshape(-1), ignore_index=-100)
 
+    def eos_loss(self, logits: torch.Tensor, input_ids: torch.Tensor, examples: list) -> torch.Tensor:
+        """Optional protocol loss for EOS; disabled by default by the pilot contract."""
+        rows = torch.arange(len(examples), device=logits.device)
+        positions = torch.tensor([example.answer_end - 1 for example in examples], device=logits.device)
+        targets = input_ids[rows, positions + 1]
+        return nn.functional.cross_entropy(logits[rows, positions], targets)
+
     def parameter_count(self) -> int:
         return sum(parameter.numel() for parameter in self.parameters())
 

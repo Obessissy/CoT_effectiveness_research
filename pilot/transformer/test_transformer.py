@@ -50,6 +50,7 @@ class TransformerPilotTests(unittest.TestCase):
         loss = model.answer_loss(logits, batch["labels"])
         self.assertEqual(tuple(logits.shape[:2]), tuple(batch["input_ids"].shape))
         self.assertTrue(torch.isfinite(loss))
+        self.assertTrue(torch.isfinite(model.eos_loss(logits, batch["input_ids"], batch["examples"])))
         loss.backward()
         self.assertIsNotNone(model.token_embedding.weight.grad)
 
