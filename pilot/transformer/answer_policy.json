@@ -1,0 +1,8 @@
+{
+  "version": "provisional-v1-whitespace-nfc-exact",
+  "training_normalization": "Unicode NFC plus collapsing and trimming whitespace",
+  "exact_match": "same normalized string",
+  "semantic_verification": "integer, boolean, fraction and decimal use exact parsers; expressions, lists, symbolic lists, time and base_number are unsupported until coordinator approval",
+  "fraction_policy": "reduced and unreduced equivalent via exact rational arithmetic",
+  "warning": "This is provisional and must not be reported as final semantic accuracy."
+}
