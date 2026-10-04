@@ -1,8 +1,37 @@
 {
-  "version": "provisional-v1-whitespace-nfc-exact",
-  "training_normalization": "Unicode NFC plus collapsing and trimming whitespace",
-  "exact_match": "same normalized string",
-  "semantic_verification": "integer, boolean, fraction and decimal use exact parsers; expressions, lists, symbolic lists, time and base_number are unsupported until coordinator approval",
+  "version": "provisional-v2-verifier-semantics",
+  "scope": "evaluation_answer_equivalence_only",
+  "training": {
+    "answer_source_field": "answer",
+    "serialization_normalization": "Unicode NFC plus collapsing and trimming whitespace",
+    "target_is_canonical_answer_text": true,
+    "eos_is_answer_token": false,
+    "eos_loss_weight": "run-specific; read from run_manifest.json, not from this policy"
+  },
+  "evaluation": {
+    "exact_match": "same NFC/whitespace-normalized string; reported separately from semantic verifier",
+    "answer_metrics_include_eos": false,
+    "generation_termination": "EOS termination and max-length failure are reported separately; missing EOS is not correctness",
+    "semantic_statuses": ["correct", "incorrect", "invalid", "unsupported"],
+    "supported_rules": {
+      "integer": "strict signed decimal integer; no trailing text",
+      "boolean": "explicit spelling table only: true, false, yes, no",
+      "fraction": "exact rational arithmetic; reduced and unreduced forms equivalent; denominator nonzero",
+      "decimal": "exact Decimal arithmetic; finite values and strict full-string syntax only",
+      "symbol": "NFC/whitespace-normalized string comparison",
+      "option_choice": "NFC/whitespace-normalized string comparison"
+    },
+    "currently_unsupported": ["expression", "number_list", "symbolic_list", "time", "base_number"],
+    "unsupported_reason": "No approved safe, type-specific semantic parser yet"
+  },
   "fraction_policy": "reduced and unreduced equivalent via exact rational arithmetic",
+  "normalization_does_not_perform": [
+    "algebraic simplification",
+    "list sorting",
+    "float conversion or tolerance comparison",
+    "time format conversion",
+    "radix conversion without explicit source metadata"
+  ],
+  "historical_compatibility": "Runs labeled provisional-v1-whitespace-nfc-exact remain historical artifacts; re-evaluate into new files before comparing semantic metrics.",
   "warning": "This is provisional and must not be reported as final semantic accuracy."
 }

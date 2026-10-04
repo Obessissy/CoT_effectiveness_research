@@ -1,5 +1,16 @@
 # Transformer pilot
 
+中文实验文档已按编号整理。建议先读 [00_实验文档索引.md](00_实验文档索引.md)；关键解释文档依次为：
+
+- [01_EOS与Codebook使用说明.md](01_EOS与Codebook使用说明.md)
+- [02_结果解读与下一步指南.md](02_结果解读与下一步指南.md)
+- [04_Random实验决策与结果核验.md](04_Random实验决策与结果核验.md)
+- [05_Oracle与Verifier下一步决策.md](05_Oracle与Verifier下一步决策.md)
+- [verifier/AGENTS.md](verifier/AGENTS.md)（verifier 专用开发约束）
+- [03_手工运行记录.md](03_手工运行记录.md)（历史记录）
+
+当前 workspace 中可核验的固定 token run 是 `baseline_fixed_z000_v1`，不是 z001。实验结果与是否继续 random 的最新判断请看 `04_Random实验决策与结果核验.md`。
+
 This directory implements the first answer-only, decoder-only Transformer pipeline.
 It uses the frozen SentencePiece artifact at
 `../tokenizer/tokenizer/v1_sp_bpe_8k_seed1234` and never edits the tokenizer or

@@ -7,7 +7,7 @@ import unicodedata
 from typing import Any
 
 
-ANSWER_POLICY_VERSION = "provisional-v1-whitespace-nfc-exact"
+ANSWER_POLICY_VERSION = "provisional-v2-verifier-semantics"
 
 
 def normalized_string(value: str) -> str:

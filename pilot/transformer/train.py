@@ -15,6 +15,7 @@ from .data import MathDataset, dataset_provenance, make_loader
 from .evaluate import evaluate_dataset
 from .model import CausalTransformer
 from .tokenizer import FrozenTokenizer
+from .verifier import ANSWER_POLICY_VERSION
 
 
 def seed_everything(seed: int) -> None:
@@ -50,7 +51,7 @@ def run(args: argparse.Namespace) -> None:
     optimizer = torch.optim.AdamW(model.parameters(), lr=train_config.learning_rate, weight_decay=train_config.weight_decay)
     train_sequence_tokens = sum(len(example.input_ids) for example in train)
     answer_tokens = sum(example.answer_end - example.answer_start for example in train)
-    manifest = {"code_version": "transformer-pilot-v2", "created_at": dt.datetime.now(dt.timezone.utc).isoformat(), "seed": args.seed, "model": model_config.to_dict(), "actual_parameter_count": model.parameter_count(), "tokenizer_model_sha256": tokenizer.hash(), "dataset": {s: dataset_provenance(args.dataset_dir, s) for s in ("train", "valid", "test_interpolate", "test_extrapolate")}, "training_path": train_path.as_posix(), "validation_path": valid_path.as_posix(), "answer_policy_version": "provisional-v1-whitespace-nfc-exact", "codebook_mode": args.codebook_mode, "codebook_index": args.codebook_index if args.codebook_mode == "fixed" else None, "eos_loss_weight": args.eos_loss_weight, "truncation_count": {"train": train.truncation_count, "valid": valid.truncation_count}, "data_stats": {"train_examples": len(train), "train_sequence_tokens_per_epoch": train_sequence_tokens, "supervised_answer_tokens_per_epoch": answer_tokens, "optimizer_steps_per_epoch": len(loader), "requested_epochs": train_config.epochs, "requested_sequence_tokens": train_sequence_tokens * train_config.epochs, "requested_tokens_per_parameter": train_sequence_tokens * train_config.epochs / max(model.parameter_count(), 1)}}
+    manifest = {"code_version": "transformer-pilot-v2", "created_at": dt.datetime.now(dt.timezone.utc).isoformat(), "seed": args.seed, "model": model_config.to_dict(), "actual_parameter_count": model.parameter_count(), "tokenizer_model_sha256": tokenizer.hash(), "dataset": {s: dataset_provenance(args.dataset_dir, s) for s in ("train", "valid", "test_interpolate", "test_extrapolate")}, "training_path": train_path.as_posix(), "validation_path": valid_path.as_posix(), "answer_policy_version": ANSWER_POLICY_VERSION, "codebook_mode": args.codebook_mode, "codebook_index": args.codebook_index if args.codebook_mode == "fixed" else None, "eos_loss_weight": args.eos_loss_weight, "truncation_count": {"train": train.truncation_count, "valid": valid.truncation_count}, "data_stats": {"train_examples": len(train), "train_sequence_tokens_per_epoch": train_sequence_tokens, "supervised_answer_tokens_per_epoch": answer_tokens, "optimizer_steps_per_epoch": len(loader), "requested_epochs": train_config.epochs, "requested_sequence_tokens": train_sequence_tokens * train_config.epochs, "requested_tokens_per_parameter": train_sequence_tokens * train_config.epochs / max(model.parameter_count(), 1)}}
     write_json(args.output_dir / "run_manifest.json", manifest)
     step = 0
     completed_epochs = 0

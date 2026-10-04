@@ -1,6 +1,6 @@
-# Transformer Pilot：EOS、Codebook 与下一步操作
+# Transformer Pilot：EOS、Codebook 与使用说明
 
-这份说明针对当前 `pilot/transformer` 代码和现有 `baseline_v1`。先说最重要的结论：**你现在不需要马上研究 oracle 或 selector。先把直接回答基线（direct baseline）训练和评测可靠地跑通，再做 codebook 对照。** 旧 run 的 2% exact match 和 100% EOS generation failure 说明当前结果不能支持模型质量或 codebook 有效性的结论。
+这份说明解释 `pilot/transformer` 中的 EOS、codebook、oracle 和指标。当前阶段已有 EOS baseline 与 fixed-token 对照；最新实验决策请看 [04_Random实验决策与结果核验.md](04_Random实验决策与结果核验.md)，不要把本说明中的旧命令示例当成当前待办。
 
 ## 1. EOS 是什么？“加入”具体指什么？
 
@@ -104,7 +104,7 @@ Codebook 是一组预留的特殊 token：`<Z_000>` 到 `<Z_031>`。启用时，
 
 训练集每个 epoch 大约 2.86M serialized tokens。3 epoch 约 8.57M tokens，和 30M 参数相比训练量很小；这次 run 原本也是 pipeline pilot，不是质量结论。代码现在会把请求/实际处理 token 数和 tokens/parameter 写入新 run 的 `run_manifest.json`。
 
-## 5. 建议的下一步：按顺序做，不要同时开多个变量
+## 5. 历史训练与评测命令模板
 
 按项目要求使用 `C:\ProgramData\anaconda3\python.exe`，并确保 Conda DLL 目录已在 `PATH` 中。如果当前 PowerShell 没有激活该环境，可先运行：
 
@@ -166,4 +166,4 @@ python -m CoT_effectiveness_research.pilot.transformer.evaluate `
 2. **`codebook_mode` 必须训练和评测配套；none checkpoint 不能拿来证明 Z token 的效果。**
 3. **先得到可信的 direct baseline，再做 fixed/random，再做 oracle，最后才是 selector。**
 
-当前最推荐动作：跑 `baseline_eos_v1`，看训练结束和 validation 结果，再决定是否扩大训练预算。暂时先不要解读 `baseline_v1` 的 oracle 结果，也不要同时尝试多个 codebook 设置。
+当前已有完整的 `baseline_eos_v1` 和 `baseline_fixed_z000_v1` validation。若继续实验，请参考 [04_Random实验决策与结果核验.md](04_Random实验决策与结果核验.md)，并用新目录保存；不要重复覆盖这些 run。
