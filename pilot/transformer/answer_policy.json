@@ -1,5 +1,5 @@
 {
-  "version": "provisional-v2-verifier-semantics",
+  "version": "provisional-v3-verifier-semantics",
   "scope": "evaluation_answer_equivalence_only",
   "training": {
     "answer_source_field": "answer",
@@ -14,17 +14,24 @@
     "generation_termination": "EOS termination and max-length failure are reported separately; missing EOS is not correctness",
     "semantic_statuses": ["correct", "incorrect", "invalid", "unsupported"],
     "supported_rules": {
-      "integer": "strict signed decimal integer; no trailing text",
-      "boolean": "explicit spelling table only: true, false, yes, no",
-      "fraction": "exact rational arithmetic; reduced and unreduced forms equivalent; denominator nonzero",
-      "decimal": "exact Decimal arithmetic; finite values and strict full-string syntax only",
+      "integer": "ASCII [+-]?[0-9]+; no decimal point, fraction, exponent, or trailing text",
+      "boolean": "case-insensitive explicit spelling table only: true, false, yes, no",
+      "fraction": "ASCII signed numerator over unsigned nonzero denominator; exact rational arithmetic; reduced and unreduced forms equivalent",
+      "decimal": "ASCII ordinary decimal [+-]?(0|[1-9][0-9]*)(\\.[0-9]+)?; finite Decimal only; no exponent, underscore, NaN, Infinity, or trailing text",
       "symbol": "NFC/whitespace-normalized string comparison",
-      "option_choice": "NFC/whitespace-normalized string comparison"
+      "option_choice": "NFC/whitespace-normalized string comparison",
+      "number_list": "ASCII comma-separated ordered list; each element is an exact integer, ordinary decimal, or rational; exact rational comparison; no empty/nested/trailing elements",
+      "base_number": "signed ASCII base-2..16 integer; radix is extracted only from a recognized explicit question template; digits 0-9a-f; no leading zeros except zero",
+      "time": "12-hour h:mm AM/PM; hour 1..12, minute 00..59, case-insensitive AM/PM; no 24:00 or alternate formats"
     },
-    "currently_unsupported": ["expression", "number_list", "symbolic_list", "time", "base_number"],
-    "unsupported_reason": "No approved safe, type-specific semantic parser yet"
+    "currently_unsupported": ["expression", "symbolic_list"],
+    "unsupported_reason": "No approved safe, type-specific semantic parser for expression or symbolic_list"
   },
-  "fraction_policy": "reduced and unreduced equivalent via exact rational arithmetic",
+  "fraction_policy": "reduced and unreduced equivalent via exact rational arithmetic; denominator is unsigned and nonzero",
+  "number_list_policy": "ordered comma-separated elements; each element may use integer, ordinary decimal, or rational syntax and all are compared as exact rational values; no sorting or cross-position matching",
+  "boolean_case_policy": "case-insensitive matching limited to the four listed spellings",
+  "base_number_policy": "radix 2..16 is taken only from recognized source-question templates; output values are integers and leading zeros are rejected except for zero",
+  "time_policy": "12-hour clock only, with exactly one space before AM/PM; case-insensitive meridiem; 24:00 is invalid",
   "normalization_does_not_perform": [
     "algebraic simplification",
     "list sorting",

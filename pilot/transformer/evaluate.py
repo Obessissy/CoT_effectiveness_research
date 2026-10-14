@@ -96,11 +96,11 @@ def evaluate_dataset(model: CausalTransformer, dataset: MathDataset, tokenizer: 
         token_count += example.answer_end - example.answer_start
         sequence, finished = generations[index]
         prediction = _prediction_from_sequence(tokenizer, sequence)
-        result = verify_answer(example.record, prediction)
+        result = verify_answer(example.record, prediction, finished=finished)
         typ = str(example.record.get("answer_type", "unknown"))
         by_type[typ]["count"] += 1
         by_type[typ]["verifier"][result["status"]] += 1
-        exact = normalize_answer_text(prediction) == normalize_answer_text(example.record["answer"])
+        exact = finished and normalize_answer_text(prediction) == normalize_answer_text(example.record["answer"])
         exact_correct += int(exact)
         by_type[typ]["exact_correct"] += int(exact)
         generated += 1
@@ -112,6 +112,12 @@ def evaluate_dataset(model: CausalTransformer, dataset: MathDataset, tokenizer: 
         "answer_log_likelihood": -total_loss,
         "exact_match": exact_correct / max(generated, 1),
         "verifier_status": dict(statuses), "by_answer_type": {k: {"count": v["count"], "exact_correct": v["exact_correct"], "verifier": dict(v["verifier"])} for k, v in by_type.items()},
+        "verifier_coverage": {
+            "supported": len(examples) - statuses["unsupported"],
+            "unsupported": statuses["unsupported"],
+            "supported_fraction": (len(examples) - statuses["unsupported"]) / max(len(examples), 1),
+        },
+        "eos_terminated_count": sum(bool(item[1]) for item in generations.values()),
         "generation_failure_rate": sum(1 for r in records if not r["finished"]) / max(generated, 1),
         "answer_policy_version": ANSWER_POLICY_VERSION,
         "records": records,
@@ -166,8 +172,8 @@ def evaluate_oracle(
     for candidate_index, (row_index, _, example) in enumerate(candidates):
         sequence, finished = generated[candidate_index]
         prediction = _prediction_from_sequence(tokenizer, sequence)
-        result = verify_answer(example.record, prediction)
-        exact = normalize_answer_text(prediction) == normalize_answer_text(example.record["answer"])
+        result = verify_answer(example.record, prediction, finished=finished)
+        exact = finished and normalize_answer_text(prediction) == normalize_answer_text(example.record["answer"])
         exact_correct += int(exact)
         statuses[result["status"]] += 1
         best[candidate_index].update({"prediction": prediction, "gold": example.record["answer"], "verifier": result, "finished": finished})

@@ -7,6 +7,9 @@
 - [04_Random实验决策与结果核验.md](04_Random实验决策与结果核验.md)
 - [05_Oracle与Verifier下一步决策.md](05_Oracle与Verifier下一步决策.md)
 - [verifier/AGENTS.md](verifier/AGENTS.md)（verifier 专用开发约束）
+- [06_Verifier_v3抽样审计.md](06_Verifier_v3抽样审计.md)（新版 verifier 抽样结果）
+- [07_阶段性综合评估与组会汇报.md](07_阶段性综合评估与组会汇报.md)（当前结果总评与下一步建议）
+- [08_三条件Checkpoint验证评测.md](08_三条件Checkpoint验证评测.md)（最新三个条件的 best/last 验证结果）
 - [03_手工运行记录.md](03_手工运行记录.md)（历史记录）
 
 当前 workspace 中可核验的固定 token run 是 `baseline_fixed_z000_v1`，不是 z001。实验结果与是否继续 random 的最新判断请看 `04_Random实验决策与结果核验.md`。
@@ -46,6 +49,24 @@ cannot make an already-finished training run appear to be stuck. Add
 `--eval-after-training` only when you explicitly want validation in the same
 process. Resume with `--resume ...\checkpoints\last.pt`; completed epochs are
 stored in the checkpoint and are not repeated.
+
+After every completed epoch, training now performs a fast teacher-forced
+validation loss on a fixed, reproducible stratified sample: 100 `integer`, 100
+`decimal`, and 100 `fraction` examples by default. The sample is selected once
+from the validation JSONL using the run seed and reused at every epoch; it is
+not simply the first 100 rows. This gives a stable loss curve without paying
+the cost of free generation. The records are printed as an `epoch_metrics` JSON
+event and written to `loss_history.json`; the selected IDs and sampling policy
+are also stored in `run_manifest.json`. Change the sample size with
+`--epoch-valid-per-type N`, or disable this curve with
+`--no-epoch-validation`. Use the separate `evaluate.py` command for final
+generation/exact-match/verifier metrics.
+
+When epoch validation is enabled, the checkpoint with the lowest sampled
+validation answer NLL is additionally saved as `checkpoints/best.pt`;
+`run_manifest.json` records `best_epoch` and its metric. `checkpoints/last.pt`
+remains the final epoch and may be overfit, so quality evaluation should
+normally use `best.pt` after inspecting the curve.
 
 ## Evaluate a saved checkpoint
 
@@ -107,3 +128,16 @@ untrained random embeddings, not the intended latent-token experiment.
 `answer_policy.json` is provisional. Exact normalized-string metrics are always
 reported; unsupported semantic types remain visible as `unsupported` until the
 coordinator approves stronger rules.
+
+## 20 epoch follow-up
+
+Replacing the existing 10 epoch runs with fresh 20 epoch runs is reasonable as
+an optimization diagnostic, but it should not overwrite the old directories.
+Use new names such as `baseline_eos_v2_20ep`, `baseline_fixed_z000_v2_20ep`,
+and `baseline_random_v2_20ep`. Inspect `loss_history.json` first: if both train
+and sampled validation answer NLL continue decreasing at epoch 10, 20 epochs
+tests whether the pilot was simply under-trained; if train NLL decreases while
+validation NLL plateaus or rises, more epochs are not the right fix. Keep the
+same seed, EOS weight, batch size, learning rate, data and verifier policy for
+the three runs. Because adding a Z token changes sequence length, record the
+processed-token count and do not call the comparison strictly compute-matched.
